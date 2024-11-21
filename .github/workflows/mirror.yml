@@ -29,6 +29,7 @@ jobs:
 
       - name: Mirror repository to GitHub
         run: |
+          cd source-repo
           git push --mirror https://github.com/SoftCreatR/aom.git
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
