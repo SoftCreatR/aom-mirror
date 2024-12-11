@@ -14,64 +14,32 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Deaktivieren alter Kompressions-/Buffer-Settings
-          # git config --global core.compression 0
-          # git config --global http.postBuffer 1048576000
 
       - name: Clone or update source repository
         run: |
           if [ -d "source-repo" ]; then
-            echo "Verzeichnis existiert bereits, hole Updates..."
             cd source-repo
-            # Ausführliches Logging aktivieren
-            GIT_TRACE=1 GIT_CURL_VERBOSE=1 git fetch --all --prune
+            git fetch --all --prune
           else
-            echo "Clone Quell-Repository (bare)"
-            GIT_TRACE=1 GIT_CURL_VERBOSE=1 git clone --bare https://aomedia.googlesource.com/aom source-repo
+            git clone --bare https://aomedia.googlesource.com/aom source-repo
             cd source-repo
-            echo "Hole alle Refs..."
-            GIT_TRACE=1 GIT_CURL_VERBOSE=1 git fetch --all --prune
+            git fetch --all --prune
           fi
-
-      - name: Inspect fetched references
-        run: |
-          cd source-repo
-          echo "Zeige alle Refs:"
-          git show-ref || true
-
-      - name: Check remotes
-        run: |
-          cd source-repo
-          echo "Konfigurierte Remotes:"
-          git remote -v
 
       - name: Set push remote
         run: |
           cd source-repo
-          # Entferne target-Remote, falls vorhanden
           git remote remove target || true
-          # Füge neuen Push-Remote hinzu
           git remote add target https://${{ secrets.PAT_TOKEN }}@github.com/SoftCreatR/aom.git
-          echo "Neue Remotes nach Hinzufügen von target:"
-          git remote -v
 
       - name: Explicit fetch heads and tags
         run: |
           cd source-repo
-          # Optional: explizit Heads und Tags holen, falls --all nicht ausreicht
-          GIT_TRACE=1 GIT_CURL_VERBOSE=1 git fetch origin +refs/heads/*:refs/heads/*
-          GIT_TRACE=1 GIT_CURL_VERBOSE=1 git fetch origin +refs/tags/*:refs/tags/*
-
-      - name: Inspect refs again after explicit fetch
-        run: |
-          cd source-repo
-          echo "Zeige alle Refs nach explizitem Fetch:"
-          git show-ref || true
+          git fetch origin +refs/heads/*:refs/heads/*
+          git fetch origin +refs/tags/*:refs/tags/*
 
       - name: Push all branches and tags to GitHub
         run: |
           cd source-repo
-          echo "Pushe alle Branches:"
-          GIT_TRACE=1 GIT_CURL_VERBOSE=1 git push --all target
-          echo "Pushe alle Tags:"
-          GIT_TRACE=1 GIT_CURL_VERBOSE=1 git push --tags target
+          git push --all target
+          git push --tags target
